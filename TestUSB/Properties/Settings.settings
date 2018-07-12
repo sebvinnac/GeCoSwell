@@ -1,0 +1,189 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="GeCoSwell.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="tb_tri1" Type="System.String" Scope="User">
+      <Value Profile="(Default)">512</Value>
+    </Setting>
+    <Setting Name="tb_tri2" Type="System.String" Scope="User">
+      <Value Profile="(Default)">512</Value>
+    </Setting>
+    <Setting Name="tb_tri3" Type="System.String" Scope="User">
+      <Value Profile="(Default)">512</Value>
+    </Setting>
+    <Setting Name="tb_tri4" Type="System.String" Scope="User">
+      <Value Profile="(Default)">512</Value>
+    </Setting>
+    <Setting Name="tb_consigne" Type="System.String" Scope="User">
+      <Value Profile="(Default)">512</Value>
+    </Setting>
+    <Setting Name="tb_con_max" Type="System.String" Scope="User">
+      <Value Profile="(Default)">972</Value>
+    </Setting>
+    <Setting Name="tb_con_min" Type="System.String" Scope="User">
+      <Value Profile="(Default)">51</Value>
+    </Setting>
+    <Setting Name="tb_freq_countmax" Type="System.String" Scope="User">
+      <Value Profile="(Default)">1023</Value>
+    </Setting>
+    <Setting Name="tb_freq_div" Type="System.String" Scope="User">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
+    <Setting Name="tb_can10b_max" Type="System.String" Scope="User">
+      <Value Profile="(Default)">1006</Value>
+    </Setting>
+    <Setting Name="tb_can10b_min" Type="System.String" Scope="User">
+      <Value Profile="(Default)">18</Value>
+    </Setting>
+    <Setting Name="tb_10b_can1" Type="System.String" Scope="User">
+      <Value Profile="(Default)">512</Value>
+    </Setting>
+    <Setting Name="tb_10b_can2" Type="System.String" Scope="User">
+      <Value Profile="(Default)">512</Value>
+    </Setting>
+    <Setting Name="tb_10b_can3" Type="System.String" Scope="User">
+      <Value Profile="(Default)">512</Value>
+    </Setting>
+    <Setting Name="tb_10b_can4" Type="System.String" Scope="User">
+      <Value Profile="(Default)">512</Value>
+    </Setting>
+    <Setting Name="tb_consigne1" Type="System.String" Scope="User">
+      <Value Profile="(Default)">512</Value>
+    </Setting>
+    <Setting Name="tb_consigne2" Type="System.String" Scope="User">
+      <Value Profile="(Default)">512</Value>
+    </Setting>
+    <Setting Name="tb_PID_cible2" Type="System.String" Scope="User">
+      <Value Profile="(Default)">512</Value>
+    </Setting>
+    <Setting Name="tb_PID_cible1" Type="System.String" Scope="User">
+      <Value Profile="(Default)">512</Value>
+    </Setting>
+    <Setting Name="tb_con_pour1Visible" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="tb_con_max1Visible" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="tb_con_min1Visible" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="cmb_consigne_CAN1Visible" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="cmb_consigne_CAN2Visible" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="tb_con_max2Visible" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="tb_consigne2Visible" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="gb_ActB1Visible" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="gb_ActB2Visible" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="gb_ActB3Visible" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="gb_ActB4Visible" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="cmb_chx_cons_visible" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="gb_PID_visible" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="tb_div_sinus1" Type="System.String" Scope="User">
+      <Value Profile="(Default)">10</Value>
+    </Setting>
+    <Setting Name="tb_div_sinus2" Type="System.String" Scope="User">
+      <Value Profile="(Default)">10</Value>
+    </Setting>
+    <Setting Name="tb_multinivmax1" Type="System.String" Scope="User">
+      <Value Profile="(Default)">1023</Value>
+    </Setting>
+    <Setting Name="tb_multinivmax2" Type="System.String" Scope="User">
+      <Value Profile="(Default)">1023</Value>
+    </Setting>
+    <Setting Name="tb_multinivmax3" Type="System.String" Scope="User">
+      <Value Profile="(Default)">1023</Value>
+    </Setting>
+    <Setting Name="tb_multinivmax4" Type="System.String" Scope="User">
+      <Value Profile="(Default)">1023</Value>
+    </Setting>
+    <Setting Name="tb_multinivmin1" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="tb_multinivmin2" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="tb_multinivmin3" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="tb_multinivmin4" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="tb_consigne3" Type="System.String" Scope="User">
+      <Value Profile="(Default)">512</Value>
+    </Setting>
+    <Setting Name="tb_con_max2" Type="System.String" Scope="User">
+      <Value Profile="(Default)">972</Value>
+    </Setting>
+    <Setting Name="tb_con_min2" Type="System.String" Scope="User">
+      <Value Profile="(Default)">51</Value>
+    </Setting>
+    <Setting Name="tb_con_min3" Type="System.String" Scope="User">
+      <Value Profile="(Default)">51</Value>
+    </Setting>
+    <Setting Name="tb_con_max3" Type="System.String" Scope="User">
+      <Value Profile="(Default)">972</Value>
+    </Setting>
+    <Setting Name="tb_con_max3Visible" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="tb_consigne3Visible" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="tb_div_sinus3" Type="System.String" Scope="User">
+      <Value Profile="(Default)">10</Value>
+    </Setting>
+    <Setting Name="tb_PID_cible3" Type="System.String" Scope="User">
+      <Value Profile="(Default)">512</Value>
+    </Setting>
+    <Setting Name="tb_offset1" Type="System.String" Scope="User">
+      <Value Profile="(Default)">512</Value>
+    </Setting>
+    <Setting Name="tb_amplitude1" Type="System.String" Scope="User">
+      <Value Profile="(Default)">1023</Value>
+    </Setting>
+    <Setting Name="l_amplitude1visible" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="tb_amplitude2" Type="System.String" Scope="User">
+      <Value Profile="(Default)">1023</Value>
+    </Setting>
+    <Setting Name="l_amplitude2visible" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="tb_offset2" Type="System.String" Scope="User">
+      <Value Profile="(Default)">512</Value>
+    </Setting>
+    <Setting Name="tb_amplitude3" Type="System.String" Scope="User">
+      <Value Profile="(Default)">1023</Value>
+    </Setting>
+    <Setting Name="l_amplitude3visible" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="tb_offset3" Type="System.String" Scope="User">
+      <Value Profile="(Default)">512</Value>
+    </Setting>
+    <Setting Name="cmb_consigne_CAN3" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
