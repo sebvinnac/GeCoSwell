@@ -1,18 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace GeCoSwell
+namespace Gestion_Objet
 {
-    class GValeurForm
+    static class GestionObjet
     {
-        public void TestValeur(object sender, List<Control> control_t)
-        {
-
-        }
 
         //----------------------------------------------------------------------
         //Donne la valeur d'index d'une combobox sous le bon format
@@ -100,13 +93,45 @@ namespace GeCoSwell
         //----------------------------------------------------------------------
         public static List<Control> Crealist(Control parent)
         {
-            List<Control> control_T = new List<Control>();
-            //Création de faux élément pour être utiliser dans l'appel.
+            return (GestionObjet.Trouver_controls_dun_type(parent, new List<Type>() { typeof(TextBox), typeof(CheckBox), typeof(ComboBox) }));
+        }
 
-            //Fonction qui stock dans une liste tout les éléments qui correspondent au type en deuxième paramètre
-            control_T = (GValeurForm.FindAllControlForOneType(parent, typeof(TextBox), control_T));
-            control_T = (GValeurForm.FindAllControlForOneType(parent, typeof(CheckBox), control_T));
-            return (GValeurForm.FindAllControlForOneType(parent, typeof(ComboBox), control_T));
+        /// <summary>
+        /// Trouve l'objet qui posséde le même nom et lui applique la nouvelle valeur
+        /// </summary>
+        /// <param name="nom">Nom de l'objet</param>
+        /// <param name="etat">Etat à appliquer, soit text, soit true or false en string </param>
+        /// <param name="control_T">list des controls à tester</param>
+        public static void Trouver_et_Appliquer(string nom, string etat,List<Control> control_T)
+        {
+            foreach (Control ct in control_T)
+            {
+                if (ct.Name == nom)
+                {
+                    TextBox tb = ct as TextBox;//plus rapide que le is
+                    if (tb != null)
+                    {
+                        tb.Text = etat;
+                        tb.Select();
+                    }
+                    else
+                    {
+                        CheckBox cb = ct as CheckBox;//plus rapide que le is
+                        if (cb != null)
+                        {
+                            cb.Checked = bool.Parse(etat);
+                        }
+                        else
+                        {
+                            ComboBox cmb = ct as ComboBox;//plus rapide que le is
+                            if (cmb != null)
+                            {
+                                cmb.SelectedIndex = int.Parse(etat);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         //----------------------------------------------------------------------
@@ -118,48 +143,54 @@ namespace GeCoSwell
         //renvoi
         //listctrl = list qui va contenir la liste complête des objets demandé
         //----------------------------------------------------------------------
-        public static List<Control> Crealist(Control parent,Type type)
+        public static List<Control> Trouver_controls_dun_type(Control parent, Type type)
         {
-            List<Control> control_T = new List<Control>();
-            //Création de faux élément pour être utiliser dans l'appel.
-
             //Fonction qui stock dans une liste tout les éléments qui correspondent au type en deuxième paramètre
-            return control_T = (GValeurForm.FindAllControlForOneType(parent, type, control_T));
+            return GestionObjet.Trouver_controls_dun_type(parent, new List<Type>() { type });
         }
 
-        //----------------------------------------------------------------------
-        //Fonction récursive qui liste tout les controls de la feuille
-        //
-        //parent = control qui va être lister
-        //type = type rechercher
-        //listctrl = list qui va contenir la liste complête des objets demandé
-        //----------------------------------------------------------------------
-        public static List<Control> FindAllControlForOneType(Control parent, Type type, List<Control> listctrl)
+        /// <summary>
+        /// liste tout les controls de la feuille (récursive)
+        /// </summary>
+        /// <param name="parent">controls dont les enfants vont être listé</param>
+        /// <param name="l_type">Liste des type d'objet doit être listé</param>
+        /// <returns>tout les controls du type choisis</returns>
+        public static List<Control> Trouver_controls_dun_type(Control parent, List<Type> l_type)
         {
+            List<Control> listctrl = new List<Control>();
             //Pour gérer l'autochargement qui créer une exeption
-            if (parent.GetType() == type)
+            if (parent.HasChildren)
             {
-                listctrl.Add(parent);
-                return listctrl;
-            }
-            // fin de l'exception
-
-            foreach (Control child in parent.Controls)
-            {
-                if (child.GetType() == type)
+                foreach (Control child in parent.Controls)
                 {
-                    listctrl.Exists(x => x.Name != child.Name);
-                    {
-                        listctrl.Add(child);
-                    }
-                }
+                    listctrl = Détect_si_objet_est_de_type(child, l_type, listctrl);
 
-                else
-                    listctrl = FindAllControlForOneType(child, type, listctrl);
+                    if (child.HasChildren)
+                    {
+                        listctrl.AddRange(Trouver_controls_dun_type(child, l_type));
+                    }
+
+                }
+            }
+            else
+            {
+                listctrl = Détect_si_objet_est_de_type(parent, l_type, listctrl);
             }
             return listctrl;
         }
 
+        private static List<Control> Détect_si_objet_est_de_type(Control control,List<Type> ltype, List<Control> lcontrolfinal)
+        {
+            foreach (Type type in ltype)
+            {
+                if (control.GetType() == type)
+                {
+                    lcontrolfinal.Add(control);
+                    return lcontrolfinal;//des qu'on trouve on sort
+                }
+            }
+            return lcontrolfinal;
+        }
         //----------------------------------------------------------------------
         //écrit une chaine de caractère au bon endroit
         //

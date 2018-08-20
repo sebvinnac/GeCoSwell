@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Windows.Forms;
+using Gestion_Objet;
 
 namespace GeCoSwell
 {
@@ -10,10 +11,24 @@ namespace GeCoSwell
         {
             InitializeComponent();
 
-            GestionFichier.Chargement(this, "Options.ini");
-            tb_quartus_stpexe.Select();
-            tb_TCL.Select();
-            tb_quartus_stpexe.Select();
+            this.Chargement_des_Options();
+            this.tb_quartus_stpexe.Select();
+            this.tb_TCL.Select();
+            this.tb_quartus_stpexe.Select();
+        }
+
+
+        /// <summary>
+        /// Charge les valeur du fichier Option.ini et met à jour l'interface en correspondance
+        /// </summary>
+        private void Chargement_des_Options()
+        {
+            GestionLoad chargement = new GestionLoad();
+            chargement.Chargement(this.tb_quartus_stpexe, "Options.ini");
+            chargement.Chargement(this.tb_TCL, "Options.ini");
+            chargement.Chargement(this.chb_AutoLoad, "Options.ini");
+            chargement.Chargement(this.chb_ModeDaltonien, "Options.ini");
+            chargement.Chargement(this.chb_valid_expert, "Options.ini");
         }
 
         //----------------------------------------------------------------------
@@ -68,7 +83,7 @@ namespace GeCoSwell
         //----------------------------------------------------------------------
         private void B_param_ok_Click(object sender, EventArgs e)
         {
-            GestionFichier.Sauvegarde(this, "Options.ini");
+            GestionSave.SauvegardeAuto(this, "Options.ini");
 
             this.Close();
         }

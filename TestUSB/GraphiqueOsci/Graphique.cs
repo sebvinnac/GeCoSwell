@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms.DataVisualization.Charting;
 
 namespace GraphiqueOsci
@@ -21,7 +17,6 @@ namespace GraphiqueOsci
 
         public Graphique(int nombre_courbe,Point location,Size taille)
         {
-
             this.Gestion_legend(legend);
 
 
@@ -54,7 +49,7 @@ namespace GraphiqueOsci
             this.titre.Text = "Mesures en cours";
             this.titre.Font = new Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.titre.ForeColor = Color.Red;
-            this.Titles.Add(titre);//rajout du titre sur le graphique
+            Titles.Add(titre);//rajout du titre sur le graphique
         }
         private void Gestion_legend(Legend leg)
         {
@@ -127,17 +122,17 @@ namespace GraphiqueOsci
             };
             leg.CellColumns.Add(minColumn);
 
-            this.Legends.Add(leg);
+            Legends.Add(leg);
         }
 
         
 
         private void Gestion_border()
         {
-            this.BorderSkin.SkinStyle = BorderSkinStyle.Raised;
-            this.BorderSkin.BorderDashStyle = ChartDashStyle.Solid;
-            this.BorderSkin.BackColor = Color.MediumBlue;
-            this.BorderSkin.BorderWidth = 1;
+            BorderSkin.SkinStyle = BorderSkinStyle.Raised;
+            BorderSkin.BorderDashStyle = ChartDashStyle.Solid;
+            BorderSkin.BackColor = Color.MediumBlue;
+            BorderSkin.BorderWidth = 1;
         }
         
 
@@ -148,22 +143,22 @@ namespace GraphiqueOsci
         public void Position(Point location)
         {
             this.location = location;
-            this.Location = this.location;
+            Location = this.location;
         }
 
         //change the size of graph
         public  void Taille(Size taille)
         {
             this.taille = taille;
-            this.Size = this.taille;
+            Size = this.taille;
         }
 
         //Add a graph
         public void Addgraph(ChartArea zone)
         {
             nombre_de_graph++;
-            Block_de_Graphique zonet = new Block_de_Graphique();
-            this.ChartAreas.Add(zone);
+            Block_de_Graphique zonet = new Block_de_Graphique(zone);
+            ChartAreas.Add(zone);
             l_bd_graph.Add(zonet);
         }
 
@@ -176,7 +171,7 @@ namespace GraphiqueOsci
         //pour mettre à jour l'affichage
         public void Miseajouraffichage()
         {
-            this.Invalidate();
+            Invalidate();
         }
 
         #region Gestion des séries avec leurs point
@@ -236,9 +231,9 @@ namespace GraphiqueOsci
             if (Find_serie(series) == -1)
             {
                 series.ChartType = SeriesChartType.FastLine;
-                this.Series.Add(series);
+                Series.Add(series);
                 this.lseries.Add(series);
-                this.Series[lseries.Count - 1].Legend = "legend";
+                Series[lseries.Count - 1].Legend = "legend";
                 //this.legend.CustomItems
             }
         }
@@ -246,7 +241,7 @@ namespace GraphiqueOsci
         //retire toute les series
         public void Serie_removeAll()
         {
-            this.Series.Clear();
+            Series.Clear();
             lseries.RemoveRange(0,lseries.Count);
             for(int i = 0; i < l_bd_graph.Count; i++)
             {

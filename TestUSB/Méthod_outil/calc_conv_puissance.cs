@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace GeCoSwell
@@ -43,7 +41,7 @@ namespace GeCoSwell
         //----------------------------------------------------------------------
         //Calcul les max et min de chaque bras dans le mode multiniveaux
         //----------------------------------------------------------------------
-        public static void Calc_multiniv(List<TextBox> maxl, List<TextBox> minl, TextBox maxtriangle)
+        public static void Calc_superposition(List<TextBox> maxl, List<TextBox> minl, TextBox maxtriangle)
         {
             if (maxl.Count != 0)
             {

@@ -3,12 +3,13 @@ using System.Text;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using Gestion_Objet;
 
-namespace GeCoSwell
+namespace Gestion_Serveur
 {
-    //----------------------------------------------------------------------
-    //class qui contient les infos de la carte FPGA
-    //----------------------------------------------------------------------
+    /// <summary>
+    /// Contient les infos de connection au serveur
+    /// </summary>
     public class StateObject
     {
         // Client socket.  
@@ -26,7 +27,6 @@ namespace GeCoSwell
     {
         // The port number for the remote device.  
         private const int port = 2540;
-
         // ManualResetEvent instances signal completion.  
         private static ManualResetEvent connectDone =
             new ManualResetEvent(false);
@@ -40,22 +40,21 @@ namespace GeCoSwell
         private static System.Net.Sockets.TcpClient clientSocket = new System.Net.Sockets.TcpClient();
         public static StateObject cartefpga;
 
+        #region Gestion connection
 
-        //----------------------------------------------------------------------
-        //Fonction qui établie la communication avec le serveur
-        //
-        //Renvoie un stateObjet avec le socket
-        //Renvoie le message d'erreur ou un ok_com
-        //----------------------------------------------------------------------
-        public static string StartClient()
+        /// <summary>
+        /// établie la communication avec le serveur
+        /// </summary>
+        /// <param name="nomdecarte">Nom stocker sur la carte FPGA pour vérifier si c'est la bonne carte</param>
+        /// <returns>Renvoie le message d'erreur ou un ok_com</returns>
+        public static string StartClient(string nomdecarte)
         {
             cartefpga = new StateObject();
 
             // Connect to a remote device.
             try
             {
-                // Establish the remote endpoint for the socket.  
-                // The name of the remote device is "host.contoso.com".  
+                // Establish the remote endpoint for the socket.   
                 IPHostEntry ipHostInfo = Dns.GetHostEntry("localhost");//se connecte sur un serveur qui tourne sur le pc
                 IPAddress ipAddress = ipHostInfo.AddressList[0];
                 IPEndPoint remoteEP = new IPEndPoint(ipAddress, port);
@@ -69,108 +68,102 @@ namespace GeCoSwell
                     new AsyncCallback(ConnectCallback), client);
                 connectDone.WaitOne();//attends que la connection ai eu lieu
                 cartefpga.workSocket = client;
-                return "co_ok";//connection établie
+                return Verif_si_bonne_carte(nomdecarte);//renvoi si c'est la bonne carte
             }
             catch (Exception e)
             {
-                GestionFichier.Log_Write_Time(e.ToString());//inscrit l'erreur dnas le log
+                GestionLog.Log_Write_Time(e.ToString());//inscrit l'erreur dans le log
                 cartefpga.etat_com = e.ToString();
                 return "error";
             }
         }
+        
+        /// <summary>
+        /// Lance une requête adresse 0 et vérifie si le nom de carte correspond
+        /// </summary>
+        /// <param name="nomdecarte">nom de la carte normal</param>
+        /// <returns>réponse qui indique si c'est la bonne carte</returns>
+        private static string Verif_si_bonne_carte(string nomdecarte)
+        {
+            string réponse = Send_data("000000000000000000");
+            string retour;
+            if (réponse.Length == 18)//détecte si la réponse fait la bonne longueur
+            {
+                if (réponse.Substring(8) == nomdecarte)//vérifie si la réponse est juste
+                {
+                    retour = "co_ok";
+                }
+                else
+                {
+                    retour = "Mauvaise_carte";
+                }
+            }
+            else
+            {
+                retour = "-1";
+            }
+            return retour;
+        }
 
-        //----------------------------------------------------------------------
-        //Fonction qui Déconnecte du serveur 
-        //
-        //client composant avec qui on communique
-        //data donnée que l'on souhaite envoyer
-        //----------------------------------------------------------------------
+        /// <summary>
+        /// Déconnecte du serveur
+        /// </summary>
         public static void Deco_serveur()
         {
             cartefpga.workSocket.Shutdown(SocketShutdown.Both);
             cartefpga.workSocket.Close();
         }
+        #endregion
 
+        #region Envoie Réception
 
-        //----------------------------------------------------------------------
-        //Fonction qui envoie des données 
-        //
-        //client composant avec qui on communique
-        //data donnée que l'on souhaite envoyer
-        //----------------------------------------------------------------------
+        /// <summary>
+        /// Envoie une données
+        /// </summary>
+        /// <param name="data">Message sous forme de : 1bit 1=écriture/0=lecture, adresse 7bits,message 10bits</param>
+        /// <returns>La valeur reçu</returns>
         public static string Send_data(string data)
         {
+            string msg = "-1";
             try
             {
-                IAsyncResult r = Send(cartefpga.workSocket, data);
-                bool sendok = sendDone.WaitOne(2000);
+                Send(cartefpga.workSocket, data);
+                bool sendok = sendDone.WaitOne(2000);//attend 2s ou jusqu'a ce que l'émission soit fini
                 
-                if (!sendok)
+                if (sendok)//si l'émission fini en moins de 2s
                 {
-                    return "-1";
-                }
-                Receive(cartefpga.workSocket);
-                sendok = receiveDone.WaitOne(2000);
+                    Receive(cartefpga.workSocket);//demande la réception
+                    sendok = receiveDone.WaitOne(2000);//attend 2s ou jusqu'a ce que la réception soit fini soit fini
 
-
-                receiveDone.Reset();
-                if (sendok)
-                {
-                    return response;
+                    receiveDone.Reset();
+                    if (sendok)
+                    {
+                        msg = response;
+                    }
                 }
-                else
-                {
-                    return "-1";
-                }
-                
+                return msg;
             }
             catch (Exception e)
             {
-                GestionFichier.Log_Write_Time(e.ToString());
-                return "-1";
+                GestionLog.Log_Write_Time(e.ToString());
+                return msg;
             }
         }
 
-
-        //----------------------------------------------------------------------
-        //Fonction qui reçoit les paramètres actuel du FPGA
-        //
-        //client composant avec qui on communique
-        //data donnée que l'on souhaite envoyer
-        //----------------------------------------------------------------------
+        /// <summary>
+        /// Lance la réception des données (même chose que l'envoie)
+        /// </summary>
+        /// <param name="data">Message sous forme de : 1bit 1=écriture/0=lecture, adresse 7bits,message 10bits</param>
+        /// <returns>La valeur reçu</returns>
         public static String Receive_data(string data)
         {
-            try
-            {
-
-                IAsyncResult r = Send(cartefpga.workSocket, data);
-                sendDone.WaitOne();
-
-
-                Receive(cartefpga.workSocket);
-                bool sendok = receiveDone.WaitOne(2000);
-
-
-                receiveDone.Reset();
-                if (sendok)
-                {
-                    return response;
-                }
-                else
-                {
-                    return "-1";
-                }
-            }
-            catch (Exception e)
-            {
-                GestionFichier.Log_Write_Time(e.ToString());
-                return "erreur";
-            }
+            return Send_data(data);
         }
-
-        //-----------------------------------------------------
-        //fonction qui indique quand la connection fonctionne
-        //-----------------------------------------------------
+        
+        /// <summary>
+        /// indique quand la connection fonctionne
+        /// </summary>
+        /// <param name="ar">Statut de la connection</param>
         private static void ConnectCallback(IAsyncResult ar)
         {
             try
@@ -186,15 +179,15 @@ namespace GeCoSwell
             }
             catch (Exception e)
             {
-                GestionFichier.Log_Write_Time(e.ToString());
+                GestionLog.Log_Write_Time(e.ToString());
             }
         }
         
-        //-----------------------------------------------------
-        //fonction qui initilise le début de réception
-        //
-        //et créer une callback pour savoir quand la donné a été reçu
-        //-----------------------------------------------------
+        /// <summary>
+        /// Initialise le début de la réception
+        /// Créer une callback pour savoir quand la donnée a été reçu
+        /// </summary>
+        /// <param name="client"></param>
         private static void Receive(Socket client)
         {
             try
@@ -210,16 +203,16 @@ namespace GeCoSwell
             }
             catch (Exception e)
             {
-                GestionFichier.Log_Write_Time(e.ToString());
+                GestionLog.Log_Write_Time(e.ToString());
             }
         }
 
-        //----------------------------------------------------------------------
-        //Fonction réception appeler par la réception de donné
-        //va tourné en récursive jusqu'a ce que la valeur a été reçu en entier
-        //
-        //le retour se fera sur la variable response
-        //----------------------------------------------------------------------
+        /// <summary>
+        /// Tourne en récursive jusqu'a ce que la valeur a été reçu en entier
+        /// appelé par la réception de donnée
+        /// le retour se fera sur la variable local response
+        /// </summary>
+        /// <param name="ar">Statut de la connection</param>
         private static void ReceiveCallback(IAsyncResult ar)
         {
             try
@@ -244,7 +237,6 @@ namespace GeCoSwell
                         client.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
                         new AsyncCallback(ReceiveCallback), state);
                     }
-                
                 }
 
                 // si pas de donné lu, ou si le client n'a plus rien à dire
@@ -262,28 +254,31 @@ namespace GeCoSwell
             }
             catch (Exception e)
             {
-                GestionFichier.Log_Write_Time(e.ToString());
+                GestionLog.Log_Write_Time(e.ToString());
             }
         }
-
-        //----------------------------------------------------------------------
-        //Fonction qui envoie des données 
-        //
-        //client = à qui il envoie les donnée
-        //data = la donné qu'il transforme en code ascii
-        //----------------------------------------------------------------------
-        private static IAsyncResult Send(Socket client, String data)
+        
+        /// <summary>
+        /// Envoie les données
+        /// </summary>
+        /// <param name="client">à qui il envoie les donnée</param>
+        /// <param name="data">la donné qu'il transforme en code ascii</param>
+        /// <returns>le statut de la connection</returns>
+        private static void Send(Socket client, String data)
         {
             // Convert the string data to byte data using ASCII encoding.  
+            // et rajoute le retour à la ligne
             byte[] byteData = Encoding.ASCII.GetBytes(data + "\n");
-
-
+            
             // Begin sending the data to the remote device.
-            //client.BeginSend(byteData, 0, 1, 0, new AsyncCallback(SendCallback), client);
-            return client.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), client);
+            client.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), client);
         }
 
 
+        /// <summary>
+        /// indique quand la connection fonctionne
+        /// </summary>
+        /// <param name="ar">Statut de la connection</param>
         private static void SendCallback(IAsyncResult ar)
         {
             try
@@ -299,9 +294,10 @@ namespace GeCoSwell
             }
             catch (Exception e)
             {
-                GestionFichier.Log_Write_Time(e.ToString());
+                GestionLog.Log_Write_Time(e.ToString());
             }
         }
+        #endregion
 
     }
 }

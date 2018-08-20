@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
+using Gestion_Objet;
 
 namespace GeCoSwell
 {
@@ -19,7 +20,7 @@ namespace GeCoSwell
             }
             catch(Exception e)
             {
-                GestionFichier.Log_Write_Time(e.ToString());
+                GestionLog.Log_Write_Time(e.ToString());
             }
         }
     }

@@ -10,14 +10,13 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 using GraphiqueOsci;
+using Gestion_Objet;
 
 namespace GeCoSwell
 {
     public partial class MesureOsci : Form
     {
         Graphique graphique1;
-        //ChartArea chartArea1;
-        //Block_de_Graphique zgraph;
 
         //real time
         private Thread addDataRunner;
@@ -25,7 +24,6 @@ namespace GeCoSwell
         public delegate void AddDataDelegate();
         public AddDataDelegate addDataDel;
         private bool mesureencour;
-        private double nb_de_point;
 
         public MesureOsci()
         {
@@ -47,15 +45,16 @@ namespace GeCoSwell
 
         //créer le délégate, init la fenetre
         private void MesureOsci_Load(object sender, EventArgs e)
-        {
-            // create the Adding Data Thread but do not start until start button clicked
-            
+        {            
             // create a delegate for adding data
             addDataDel += new AddDataDelegate(AddData);
         }
 
+
+        //ferme le thread avant de fermer la fenetre
         private void MainForm_Closing(Object sender, CancelEventArgs e)
         {
+            if (addDataRunner != null)
             if (addDataRunner.IsAlive == true)
             {
                 addDataRunner.Abort();
@@ -65,6 +64,8 @@ namespace GeCoSwell
         #region Realtime
 
         int index_tab_sinus = 1;
+        double quantum_temps;
+        int nb_serie;
         private void B_Mesure_Click(object sender, System.EventArgs e)
         {
             ThreadStart addDataThreadStart = new ThreadStart(AddDataThreadLoop);
@@ -76,14 +77,21 @@ namespace GeCoSwell
             b_stop.Enabled = true;
             b_save_point.Enabled = true;
 
+
+            //donne les noms des axes
+            graphique1.Nom_axe("Durée en µs", "Valeur en 10Bits", 0);
+
             //initialisation du tableau dans le fpga
             //initialise le tableau à la première valeur;
             index_tab_sinus = 1;
-            GCfpga.Send_Param("tb_val_63", index_tab_sinus.ToString(), 1, 1);
+            //GCfpga.Send_Param("tb_val_63", index_tab_sinus.ToString(), 1, 1);
+            quantum_temps = Calcul_duree_entre_point_micros();
 
             //retire toute les autre série en rajoute 1
             graphique1.Serie_removeAll();
             graphique1.Serie_rajout(new Series("CAN1"));
+            nb_serie = graphique1.Serie_nombre();
+
 
             // start worker threads.
             if (addDataRunner.IsAlive == false)
@@ -91,6 +99,21 @@ namespace GeCoSwell
                 addDataRunner.Start();
             }
 
+        }
+
+        //Donne la durée entre deux point en µs
+        private double Calcul_duree_entre_point_micros()
+        {
+            double result;
+
+            //if (div_freq == 1025)
+            //    div_freq = 1;
+
+            //msg_recu = GCfpga.Send_Param("tb_val_32", "0", 11, 1);
+            //Double max_triangle = double.Parse(GCfpga.Conv_1023_vers_10bits(msg_recu.Substring(msg_recu.Length - 13, 10), false, 1));
+
+            //return result = Math.Round(1 / (200/max_triangle/div_freq),2);//en µs 200M /100 000 pour avoir µs /2 car deux mesure par triangle
+            return 2;
         }
 
         private void B_stop_click(object sender, System.EventArgs e)
@@ -108,7 +131,6 @@ namespace GeCoSwell
         private void AddDataThreadLoop()
         {
             mesureencour = true;
-            nb_de_point = 0;
             while (mesureencour)
             {
                 if (graphique1.IsDisposed || (!graphique1.IsHandleCreated && !graphique1.FindForm().IsHandleCreated))
@@ -126,7 +148,6 @@ namespace GeCoSwell
                         mesureencour = false;
                     }
                 }
-                nb_de_point++;
             }
 
             //si on sort de la boucle on doit stopper le thread
@@ -144,7 +165,7 @@ namespace GeCoSwell
         
         public void AddData()
         {
-            for (int i = 0; i < graphique1.Serie_nombre();  i++)
+            for (int i = 0; i < nb_serie;  i++)
             {
                 AddNewPoint(i);
             }
@@ -154,16 +175,16 @@ namespace GeCoSwell
 
         public void AddNewPoint(int num_de_serie_affecte)
         {
-
+            /*
             //return les 10 dernier bits retourner par send et les convertie en décimal
             string msg_recu = GCfpga.Send_Param("tb_val_64", index_tab_sinus.ToString(), 11, 1);
             if (msg_recu != "-1")//si erreur dans le transfert
             {
                 if (index_tab_sinus != 1)
                 {
-                    Double val = double.Parse(GCfpga.Conv_1023_vers_10bits(msg_recu.Substring(msg_recu.Length - 13, 10), 0, 1));
+                    Double val = double.Parse(GCfpga.Conv_1023_vers_10bits(msg_recu.Substring(msg_recu.Length - 13, 10), false, 1));
                     //ptSeries.Points.AddXY(nbpoint, val);
-                    graphique1.Point_rajout(num_de_serie_affecte, nb_de_point, val);
+                    graphique1.Point_rajout(num_de_serie_affecte, (index_tab_sinus - 2) * quantum_temps, val);
                     graphique1.MAJ_axeX(num_de_serie_affecte, 0);
                 }
             }
@@ -172,39 +193,15 @@ namespace GeCoSwell
                 mesureencour = false;
             }
             index_tab_sinus++;
-
+            */
         }
         #endregion
 
         private void B_save_point_Click(object sender, EventArgs e)
         {
-            GestionFichier.Save_point(graphique1.Recup_serie());
+            GestionSave save = new GestionSave("Fichier texte|*.txt", "Sauvegarde des points pour Excel");
+            save.Ecrire(this.graphique1.Recup_serie());
             
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            b_save_point.Enabled = true;
-            Random rd = new Random();
-            graphique1.Serie_rajout(new Series("CAN1"));
-            graphique1.Serie_rajout(new Series("CAN2"));
-            int y = 1;
-            graphique1.Point_rajout(0, new Point(rd.Next(1, 10), y));
-            graphique1.Point_rajout(1, new Point(rd.Next(1, 10), y));
-            y++;
-            graphique1.Point_rajout(0, new Point(rd.Next(1, 10), y));
-            graphique1.Point_rajout(1, new Point(rd.Next(1, 10), y));
-            y++;
-            graphique1.Point_rajout(0, new Point(rd.Next(1, 10), y));
-            graphique1.Point_rajout(1, new Point(rd.Next(1, 10), y));
-            y++;
-            graphique1.Point_rajout(0, new Point(rd.Next(1, 10), y));
-            graphique1.Point_rajout(1, new Point(rd.Next(1, 10), y));
-            y++;
-            graphique1.Point_rajout(0, new Point(rd.Next(1, 10), y));
-            graphique1.Point_rajout(1, new Point(rd.Next(1, 10), y));
-            y++;
-            graphique1.Miseajouraffichage();
         }
     }
 }

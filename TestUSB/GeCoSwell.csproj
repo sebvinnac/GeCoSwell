@@ -83,7 +83,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AffichFeuil.cs" />
+    <Compile Include="aide\Aide_Général.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="aide\Aide_Général.Designer.cs">
+      <DependentUpon>Aide_Général.cs</DependentUpon>
+    </Compile>
+    <Compile Include="aide\Bt_aide.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="aide\Mode_fonctionnement.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -132,9 +140,40 @@
     <Compile Include="Apropos.Designer.cs">
       <DependentUpon>Apropos.cs</DependentUpon>
     </Compile>
-    <Compile Include="CalculFeuille.cs" />
-    <Compile Include="calc_conv_puissance.cs" />
-    <Compile Include="Chiffre.cs" />
+    <Compile Include="DataFPGA\UneDataFPGA.cs" />
+    <Compile Include="DataFPGA\DataG_pour_FPGA.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Gb_Spéciaux\CAN\CAN.cs" />
+    <Compile Include="Gb_Spéciaux\DoublePulse\DoublePulse.cs" />
+    <Compile Include="Gb_Spéciaux\Fréquence\Fréquence.cs" />
+    <Compile Include="Gb_Spéciaux\Paramètres généraux\ParamètresGénéraux.cs" />
+    <Compile Include="Gestion_Objet\CCheckbox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Gestion_Objet\CComboBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Gestion_Objet\GGroupBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Gestion_Objet\LLabel.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Gestion_Objet\TTextBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Gb_Spéciaux\Bras\Bras.cs" />
+    <Compile Include="Gb_Spéciaux\Consigne\Consigne.cs" />
+    <Compile Include="Gb_Spéciaux\Consigne\PID.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Gb_Spéciaux\Consigne\Sinus_FPGA.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Gb_Spéciaux\IGb_Spéciaux_.cs" />
+    <Compile Include="Méthod_outil\Calc_conv_puissance.cs" />
+    <Compile Include="Méthod_outil\Chiffre.cs" />
     <Compile Include="Dessin.cs" />
     <Compile Include="Fenetre.cs">
       <SubType>Form</SubType>
@@ -142,20 +181,23 @@
     <Compile Include="Fenetre.Designer.cs">
       <DependentUpon>Fenetre.cs</DependentUpon>
     </Compile>
-    <Compile Include="GCfpga.cs" />
-    <Compile Include="GestionFichier.cs" />
-    <Compile Include="GestionValeurForm.cs" />
+    <Compile Include="Gestion_Général\Fichier\GestionFichier.cs" />
+    <Compile Include="Gestion_Général\Fichier\GestionSave.cs" />
+    <Compile Include="Gestion_Général\Fichier\GestionLoad.cs" />
+    <Compile Include="Gestion_Général\Fichier\GestionLog.cs" />
+    <Compile Include="Gestion_Objet\GestionObjet.cs" />
     <Compile Include="GraphiqueOsci\Graphique.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="GraphiqueOsci\Block_de_Graphique.cs" />
-    <Compile Include="GServeur.cs" />
+    <Compile Include="Gestion_Serveur\Gestion_Serveur.cs" />
     <Compile Include="MesureOsci.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="MesureOsci.Designer.cs">
       <DependentUpon>MesureOsci.cs</DependentUpon>
     </Compile>
+    <Compile Include="Méthod_outil\Outil_text.cs" />
     <Compile Include="Options.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -170,6 +212,12 @@
     </Compile>
     <Compile Include="Tab_sinus.Designer.cs">
       <DependentUpon>Tab_sinus.cs</DependentUpon>
+    </Compile>
+    <Compile Include="test.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="test.Designer.cs">
+      <DependentUpon>test.cs</DependentUpon>
     </Compile>
     <EmbeddedResource Include="aide\Double_pulse.resx">
       <DependentUpon>Double_pulse.cs</DependentUpon>
@@ -216,6 +264,9 @@
     </Compile>
     <EmbeddedResource Include="Tab_sinus.resx">
       <DependentUpon>Tab_sinus.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="test.resx">
+      <DependentUpon>test.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="Properties\DataSources\AdresseFPGA.datasource" />
     <None Include="Properties\DataSources\AsynchronousClient.datasource" />
@@ -268,6 +319,7 @@
     <None Include="Resources\aide_freq.png" />
     <None Include="Resources\aide_mesure.png" />
     <None Include="Resources\aide_param.png" />
+    <None Include="Resources\icon%281%29.png" />
     <Content Include="Resources\icons8-automatic-16.png" />
     <Content Include="Resources\icons8-connected-16.png" />
     <Content Include="Resources\icons8-disconnected-16.png" />
@@ -282,6 +334,8 @@
     <Content Include="Resources\icons8-send-16.png" />
     <Content Include="Resources\lancer_serveur_50.jpg" />
     <Content Include="Resources\logo_laplace.gif" />
+    <None Include="Resources\pause.png" />
+    <None Include="Resources\play-button.png" />
     <Content Include="Resources\puissance.ico" />
   </ItemGroup>
   <ItemGroup />
