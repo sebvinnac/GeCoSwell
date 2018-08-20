@@ -124,30 +124,19 @@ namespace Gestion_Serveur
         /// <returns>La valeur reçu</returns>
         public static string Send_data(string data)
         {
-            string msg = "-1";
-            try
-            {
-                Send(cartefpga.workSocket, data);
-                bool sendok = sendDone.WaitOne(2000);//attend 2s ou jusqu'a ce que l'émission soit fini
-                
-                if (sendok)//si l'émission fini en moins de 2s
-                {
-                    Receive(cartefpga.workSocket);//demande la réception
-                    sendok = receiveDone.WaitOne(2000);//attend 2s ou jusqu'a ce que la réception soit fini soit fini
+            Send(cartefpga.workSocket, data);
+            bool sendok = sendDone.WaitOne(2000);//attend 2s ou jusqu'a ce que l'émission soit fini
 
-                    receiveDone.Reset();
-                    if (sendok)
-                    {
-                        msg = response;
-                    }
-                }
-                return msg;
-            }
-            catch (Exception e)
-            {
-                GestionLog.Log_Write_Time(e.ToString());
-                return msg;
-            }
+            if (!sendok)//si l'émission fini en moins de 2s
+                throw new Communication_échoué_Exception();
+
+            Receive(cartefpga.workSocket);//demande la réception
+            sendok = receiveDone.WaitOne(2000);//attend 2s ou jusqu'a ce que la réception soit fini soit fini
+
+            receiveDone.Reset();
+            if (!sendok)
+                throw new Communication_échoué_Exception();
+            return response;
         }
 
         /// <summary>

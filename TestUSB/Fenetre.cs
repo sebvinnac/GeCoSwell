@@ -7,13 +7,12 @@ using System.Drawing;
 using System.IO;
 using Gestion_Objet;
 using Gestion_Serveur;
-using DataFPGA;
+using Gestion_Connection_Carte_FPGA;
 
 namespace GeCoSwell
 {
     public partial class Fenetre1 : Form
     {
-
         //nouvelle version
         private List<IGB_Spéciaux> Li_Gb_spéciaux = new List<IGB_Spéciaux>();
         private List<Consigne> Li_consigne = new List<Consigne>();
@@ -22,8 +21,10 @@ namespace GeCoSwell
         private ParamètresGénéraux paramètresGénéraux;
         private Fréquence fréquence;
         private CAN can;
+        private Etat_de_connection Etat_co;
 
-        private DataGridView_pour_FPGA DGV;
+        private DataGridView_pour_FPGA DGV_fpga;
+        private Gestionaire_denvoi G_denvoi;
 
         // textbox et checkbox qui contiennent les variables de la fenetre option.
         TextBox tb_quartus_stpexe;
@@ -32,290 +33,136 @@ namespace GeCoSwell
         CheckBox chb_ModeDaltonien;
         CheckBox chb_valid_expert;
         
-        // enregistrement contenant l'etat de la connexion
-        // et le message d'erreur en cas d'erreur de transmission 
-        public struct SEtat_co
-        {
-            public int etat;
-            public string erreur;
-
-            public SEtat_co(int p1, string p2)
-            {
-                this.etat = p1;
-                this.erreur = p2;
-            }
-         
-        }
-
-        private string erreur;  // message d'erreur lors de l'envoi
-        private int etat_co;    // etat de la connexion avec le serveur
-        // private object contenu_graphique;
-
-        // propriété chargé de gérer le changement de connexion
-        public int Etat_de_connection
-        {
-            get
-            {
-                return this.etat_co;
-            }
-            set
-            {
-                if (etat_co != value)   // changement de l'etat de la connexion
-                {
-                    etat_co = value;    // affecter la nouvelle valeur
-                    this.Changement_Etat_Connect(this, EventArgs.Empty); // changer l'etat de la connexion
-                }
-            }
-        }
-        
         public Fenetre1()
         {
-            InitializeComponent();
-            
+            this.InitializeComponent();
+            this.Init_Etat_de_connection();
+            this.Init_Gestion_des_options();
+            this.Init_GB_spéciaux();
+            this.Init_Gestionnaire_de_connection();
 
-            StateObject cartefpga = new StateObject();
             this.Closing += new CancelEventHandler(this.MainForm_Closing);
+        }
 
-            // initialiser la valeur de l'etat de connexion
-            Etat_de_connection = -99;
 
+        #region Initialisation de la fenetre
+
+
+        private void Init_Gestionnaire_de_connection()
+        {
+            this.G_denvoi = new Gestionaire_denvoi(this.DGV_fpga);
+            MAJ_DATA_pour_Envoi.Lier_à_état_co(this.Etat_co);
+            MAJ_DATA_pour_Envoi.Lier_à_li_Gb_Spéciaux(this.Li_Gb_spéciaux);
+        }
+
+        private void Init_GB_spéciaux()
+        {
+            this.Li_consigne = Consigne.Créer_x_fois_consigne(6, 6, 3, 1);
+            this.Li_Bras = Bras.Géné_x_consigne(6, 127, 4, 2);
+
+            Consigne.Lié_position_dessous(Bras.Li_Gb_bras);
+            this.doublepulse = new DoublePulse(6, 6, false);
+            this.paramètresGénéraux = new ParamètresGénéraux(782, 140, true);
+            this.fréquence = new Fréquence(1063, 140, true);
+            this.can = new CAN(782, 262);
+
+            foreach (GGroupBox gb in Consigne.Li_Gb_consigne)
+            {
+                this.panel_modulaire.Controls.Add(gb);
+            }
+            foreach (GGroupBox gb in Bras.Li_Gb_bras)
+            {
+                this.panel_modulaire.Controls.Add(gb);
+            }
+            this.panel_modulaire.Controls.Add(doublepulse.Gb_Principal);
+            this.Controls.Add(paramètresGénéraux.Gb_Principal);
+            this.Controls.Add(this.fréquence.Gb_Principal);
+            this.Controls.Add(this.can.Gb_Principal);
+
+
+            this.Li_Gb_spéciaux.AddRange(this.Li_Bras);
+            this.Li_Gb_spéciaux.AddRange(this.Li_consigne);
+            this.Li_Gb_spéciaux.Add(this.doublepulse);
+            this.Li_Gb_spéciaux.Add(this.paramètresGénéraux);
+            this.Li_Gb_spéciaux.Add(this.fréquence);
+            this.Li_Gb_spéciaux.Add(this.can);
+        }
+
+        private void Init_Gestion_des_options()
+        {            
             // gerer le chargement des valeurs dans le .ini
-            // les objets sont générés mais n'existent pas vraiment
-            this.tb_quartus_stpexe = new TextBox() { Name = "tb_quartus_stpexe" };                      // création d'une textbox pour contenir l'info de l'option
-            this.tb_TCL = new TextBox() { Name = "tb_TCL" };                                            // création d'une textbox pour contenir l'info de l'option
-            this.chb_AutoLoad = new CheckBox() { Name = "ch_AutoLoad", Checked = false };               // création d'une checkbox pour contenir l'info de l'option
-            this.chb_ModeDaltonien = new CheckBox() { Name = "chb_ModeDaltonien", Checked = false };    // création d'une textbox pour contenir l'info de l'option
-            this.chb_valid_expert = new CheckBox() { Name = "chb_valid_expert", Checked = false };      // création d'une textbox pour contenir l'info de l'option
+            this.tb_quartus_stpexe = new TextBox() { Name = "tb_quartus_stpexe" };
+            this.tb_TCL = new TextBox() { Name = "tb_TCL" };                                            
+            this.chb_AutoLoad = new CheckBox() { Name = "ch_AutoLoad", Checked = false };
+            this.chb_ModeDaltonien = new CheckBox() { Name = "chb_ModeDaltonien", Checked = false };
+            this.chb_valid_expert = new CheckBox() { Name = "chb_valid_expert", Checked = false };
 
             this.Chargement_des_Options();
 
-            // initialiser la liste des adresses FPGA et leurs correspondances
-        }
-
-        
-        // gerer les boutons et labels à chaque changement d'état de connexion 
-        // Etat_de_connection < 0 : serveur down
-        // 0 < Etat_de_connection < 10 : serveur on mais non connecté
-        // 10 < Etat_de_connection < 20 : serveur connecté sans transfert 
-        // 20 < Etat_de_connection : trandfert de données en cours
-        public void Changement_Etat_Connect(object sender, EventArgs e)
-        {   
-            // initialement tout est désactivé
-            Changer_Enabled_bt_serveur_en(false);          
-            Changer_Enabled_bt_co_serveur_en(false);       
-            Changer_Enabled_bt_transfert_data_en(false);   
-
-            if (10 < this.Etat_de_connection && this.Etat_de_connection < 20)
+            if (this.chb_AutoLoad.Checked) // si la checkbox est true alors on charge le fichier autosave
             {
-                Changer_Enabled_bt_transfert_data_en(true);
-            }
-            else
-            {
-                if (Etat_de_connection < 10 && Etat_de_connection >= 0)
-                {
-                    Changer_Enabled_bt_co_serveur_en(true);
-                }
-                else
-                {
-                    if (Etat_de_connection < 0)
-                    {
-                        Changer_Enabled_bt_serveur_en(true);
-                    }
-                }
-
-            }
-
-            this.l_info_connection.ForeColor = Color.Black; // couleur par défaut des infos sur la connexion
-
-            // afficher des indications de fonctionnement de l'application et/ou
-            // l'état de fonctionnement des composants de l'application
-            switch (Etat_de_connection)
-            {
-                case -4:
-                    this.l_info_connection.Text = "Les options sont correctes, vous pouvez lancer le serveur.";
-                    break;
-                case -3:
-                    this.l_info_connection.ForeColor = Color.Red;
-                    this.l_info_connection.Text = "Le serveur s'est fermé, veuillez le relancer.";
-                    break;
-                case -2:
-                    this.l_info_connection.ForeColor = Color.Red;
-                    this.l_info_connection.Text = "Options à mettre à jour, cliquer sur outil puis option.";
-                    Changer_Enabled_bt_serveur_en(false);
-                    break;
-                case 0:
-                    this.l_info_connection.Text = "Serveur lancé, attendez que la ligne :\n \"Started Socket Server on port - 2540\" apparaissent avant de cliquer sur connexion.";
-                    break;
-                case 1:
-                    this.l_info_connection.Text = "Déconnexion réussie.";
-                    break;
-                case 8:
-                    this.l_info_connection.ForeColor = Color.Red;
-                    this.l_info_connection.Text = "Connection avec la mauvaise carte FPGA";
-                    break;
-                case 9:
-                    this.l_info_connection.ForeColor = Color.Red;
-                    this.l_info_connection.Text = "La connexion a échoué avec le serveur. Réessayez, si l'échec persiste relancez le serveur.";
-                    break;
-                case 10:
-                    this.déconnectéToolStripMenuItem.Enabled = true;
-                    this.l_info_connection.Text = "Connexion en cours avec le serveur...";
-                    break;
-                case 11:
-                    this.l_info_connection.Text = "Connexion réussie, vous pouvez commencer à échanger des données.";
-                    break;
-                case 12:
-                    this.l_info_connection.Text = "Envoi terminé.";
-                    this.b_Envoi.Image = GeCoSwell.Properties.Resources.icons8_send_16;
-                    break;
-                case 13:
-                    this.l_info_connection.Text = "Réception terminé.";
-                    break;
-                case 14:
-                    l_info_connection.ForeColor = Color.Red;
-                    this.l_info_connection.Text = "L'envoi a échoué." + "\n" + /*gestion_etat_co.*/erreur;
-                    break;
-                case 15:
-                    this.l_info_connection.ForeColor = Color.Red;
-                    this.l_info_connection.Text = "La réception a échoué.";
-                    break;
-                case 20:
-                    this.l_info_connection.Text = "Envoi en cours.";
-                    break;
-                case 21:
-                    this.l_info_connection.Text = "Réception en cours.";
-                    break;
-                case 22:
-                    this.l_info_connection.Text = "Mesure en cours.";
-                    break;
+                //TODO
+                //chargement.Chargement(this.tp_manuel, "Autosave.txt");
             }
         }
 
-
-        // Attribuer un état au bouton qui gère le serveur
-        // Paramètre : 
-        //      bool etat a affecté aux boutons
-        private void Changer_Enabled_bt_serveur_en(bool etat)
+        private void Init_Etat_de_connection()
         {
-            // modifier l'état du bouton pour lancer le serveur
+            Etat_co = new Etat_de_connection(this);
+        }
+
+        #endregion
+
+        #region Gestion des boutons du serveur et connection
+
+        public void Changer_letat_Enabled_des_bt_Lancer_serveur(bool etat)
+        {
             this.b_lancer_serveur.Enabled = etat;
             this.tsm_serveur.Enabled = etat;
         }
 
-
-        // Attribuer un état au bouton qui gèrent la connexion au serveur
-        // Paramètre :
-        //      bool etat a affecé aux boutons
-        private void Changer_Enabled_bt_co_serveur_en(bool etat)
+        public void Changer_letat_Enabled_des_bt_connection_serveur(bool etat)
         {
-            //bouton de connection au serveur
             this.b_Connection.Enabled = etat;
             this.tsm_connect.Enabled = etat;
         }
 
-
-        // Attribuer un nouvel état aux boutons qui gèrent l'envoi
-        // ou la réception de la donnée data
-        // Paramètre :
-        //      bool etat a affecté aux boutons
-        private void Changer_Enabled_bt_transfert_data_en(bool etat)
+        public void Changer_letat_Enabled_des_bt_de_transfert_data(bool etat)
         {
-            //bouton de transfert de data
             this.b_Envoi.Enabled = etat;
             this.b_Reception.Enabled = etat;
             this.tsm_send.Enabled = etat;
             this.tsm_reception.Enabled = etat;
             this.tsm_deconnecte.Enabled = etat;
+            this.déconnectéToolStripMenuItem.Enabled = etat;
         }
 
-        
-        // Demander la connexion au serveur et gérer les boutons en 
-        // fonction de la réponse du serveur
-        private void B_Communication_Click(object sender, EventArgs e)
+        public void Changer_text_l_info_connection(string message,Color couleur)
         {
-            Etat_de_connection = 10; // état de connexion en cours
-
-            // Lancer la demande de connexion de côté sans bloquer l'utilisateur
-            BackgroundWorker bgw_co_serv = new BackgroundWorker()
-            {WorkerReportsProgress = true,
-            };
-            
-            bgw_co_serv.DoWork += new DoWorkEventHandler(Bgw_co_serv_DoWork);
-            bgw_co_serv.ProgressChanged += new ProgressChangedEventHandler(Bgw_co_serv_ProgressChanged);
-            bgw_co_serv.RunWorkerCompleted += new RunWorkerCompletedEventHandler(Bgw_co_serv_RunWorkerCompleted);
-            bgw_co_serv.RunWorkerAsync();
-        }
-        
-        // Lancer la connexion de côté
-        private void Bgw_co_serv_DoWork(object sender, DoWorkEventArgs e)
-        {
-            ((BackgroundWorker)sender).ReportProgress(0,AsynchronousClient.StartClient("0000000001"));
-        }
-        
-        private void Bgw_co_serv_ProgressChanged(object sender, ProgressChangedEventArgs e)
-        {
-            string test = e.UserState.ToString();
-            if (test == "co_ok")
-            {
-                this.Etat_de_connection = 11; // connexion en cours
-            }
-            else if (test == "Mauvaise_carte")
-            {
-                this.Etat_de_connection = 8;
-            }
-            else
-            {
-                this.Etat_de_connection = 9; // connection échouée
-            }
-            //voir si j'en fait quelque chose
+            this.l_info_connection.Text = message;
+            this.l_info_connection.ForeColor = couleur;
         }
 
+        #endregion
 
-        private void Bgw_co_serv_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        private void B_Connection_serveur_Click(object sender, EventArgs e)
         {
-            //voir si je fait quelque chose quand le code est fini
+            Connection_au_serveur.Gestion_tentative_connection(this.Etat_co);
         }
 
-        // Envoyer un signal à la carte FPGA
-        private void B_Envoi_Click(object sender, EventArgs e)
+        private void B_Envoi_donné_Click(object sender, EventArgs e)
         {
-            Etat_de_connection = 20;// état d'envoi en cours
-            string send_ok = "";
+            MAJ_DATA_pour_Envoi.MAJ_Data_puis_envoi(G_denvoi);
 
-
-
-                if (send_ok != "")
-                {// une erreur de transfert est survenue
-                    //gestion_etat_co.erreur = send_ok;
-                    erreur = send_ok;
-                    Etat_de_connection = 14;
-                    return;                                         // arrêter le transfert
-                }
-
-                List<String> type_connexion = new List<string>() { "ALL", "BO" };
-                
-
-                for (int i = 0; i < type_connexion.Count; i++)
-                {
-                    if (send_ok != "")
-                    {// une erreur de transfert est survenue
-                        //gestion_etat_co.erreur = send_ok;
-                        erreur = send_ok;
-                        Etat_de_connection = 14;
-                        return;                                         // arrêter le transfert
-                    }
-                }
-                
             // INDIQUER QUE LA DONNEE A ETE ENVOYEE
             //b_Envoi.Image = GeCoSwell.Properties.Resources.icons8_send_16; 
-            Etat_de_connection = 12; // état de l'envoi terminé
         }
 
         // Récupérer les informations de la carte quand on clique
         // sur le bouton réception de l'interface
         private void B_Reception(object sender, EventArgs e)
         {
-            Etat_de_connection = 21;//réception en cour
+            this.Etat_co.Etat_de_connection_actuel = 21;//réception en cour
             /*
             if (send_ok == "-1")//si erreur de transfert
             {
@@ -323,7 +170,7 @@ namespace GeCoSwell
                 return;//dans ce cas la on arrête le transfert
             }*/
 
-            Etat_de_connection = 13;//réception terminé
+            this.Etat_co.Etat_de_connection_actuel = 13;//réception terminé
         }
 
 
@@ -384,7 +231,7 @@ namespace GeCoSwell
         // la connexion est tenté ou même si elle subit un ralentissement.
         private void Lancer_serveur()
         {
-            Etat_de_connection = 0; // serveur se lance
+            this.Etat_co.Etat_de_connection_actuel = 0; // serveur se lance
 
             // Lancer la demande de connexion de coté sans bloquer l'utilisateur
             BackgroundWorker bgw_serveur = new BackgroundWorker()
@@ -458,7 +305,7 @@ namespace GeCoSwell
         private void Bgw_serveur_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             // l_info_connection.Text = (string)e.UserState; // récupérer le texte de progession
-            Etat_de_connection = e.ProgressPercentage;  // Envoiyer l'état de la connexion
+            this.Etat_co.Etat_de_connection_actuel = e.ProgressPercentage;  // Envoiyer l'état de la connexion
         }
 
 
@@ -472,7 +319,7 @@ namespace GeCoSwell
         private void Tsm_deco_Click(object sender, EventArgs e)
         {
             AsynchronousClient.Deco_serveur();
-            Etat_de_connection = 1;
+            this.Etat_co.Etat_de_connection_actuel = 1;
         }
 
         private void Maj_Inversion(object sender,CheckBox chb_bras, TextBox tb_val, int position)
@@ -547,7 +394,7 @@ namespace GeCoSwell
         /// Charge les valeur du fichier Option.ini et met à jour l'interface en correspondance
         /// </summary>
         private void Chargement_des_Options()
-        {/*
+        {
             GestionLoad chargement = new GestionLoad();
             chargement.Chargement(this.tb_quartus_stpexe, "Options.ini");
             if (tb_quartus_stpexe.Text != "")
@@ -557,12 +404,7 @@ namespace GeCoSwell
                 chargement.Chargement(this.chb_ModeDaltonien, "Options.ini");
                 chargement.Chargement(this.chb_valid_expert, "Options.ini");
                 //this.chb_send_auto.Enabled = this.chb_valid_expert.Checked;
-
-                if (this.chb_AutoLoad.Checked) // si la checkbox est true alors on charge le fichier autosave
-                {
-                    chargement.Chargement(this.tp_manuel, "Autosave.txt");
-                }
-            }*/
+            }
         }
 
         //----------------------------------------------------------------------
@@ -586,7 +428,7 @@ namespace GeCoSwell
 
                 if (!list_process.Contains("quartus_stp")) // si la liste contient quartus_stp on déduit qu'il tourne
                 {
-                    Etat_de_connection = -4;
+                    this.Etat_co.Etat_de_connection_actuel = -4;
                 }
             }
         }
@@ -657,46 +499,18 @@ namespace GeCoSwell
 
         private void button1_Click(object sender, EventArgs e)
         {
-            
-            this.Li_consigne = Consigne.Créer_x_fois_consigne(6, 6, 3, 3);
-            this.Li_Bras = Bras.Géné_x_consigne(6, 127, 4, 4);
-            foreach (GGroupBox gb in Consigne.Li_Gb_consigne)
-            {
-                this.panel_modulaire.Controls.Add(gb);
-            }
-            foreach (GGroupBox gb in Bras.Li_Gb_bras)
-            {
-                this.panel_modulaire.Controls.Add(gb);
-            }
-            Consigne.Lié_position_dessous(Bras.Li_Gb_bras);
-            this.doublepulse = new DoublePulse(6, 6, false);
-            this.panel_modulaire.Controls.Add(doublepulse.Gb_Principal);
-            this.paramètresGénéraux = new ParamètresGénéraux(782, 140, true);
-            this.Controls.Add(paramètresGénéraux.Gb_Principal);
-            this.fréquence = new Fréquence(1063, 140, true);
-            this.Controls.Add(this.fréquence.Gb_Principal);
-            this.can = new CAN(782, 262);
-            this.Controls.Add(this.can.Gb_Principal);
-
-
-            this.Li_Gb_spéciaux.AddRange(this.Li_Bras);
-            this.Li_Gb_spéciaux.AddRange(this.Li_consigne);
-            this.Li_Gb_spéciaux.Add(this.doublepulse);
-            this.Li_Gb_spéciaux.Add(this.paramètresGénéraux);
-            this.Li_Gb_spéciaux.Add(this.fréquence);
-            this.Li_Gb_spéciaux.Add(this.can);
         }
 
         private void checkBox1_Click(object sender, EventArgs e)
         {
-            Consigne.Gb_Pid_visibilité(((CheckBox)sender).Checked);
+            Consigne.Change_Visibilité_Pid(((CheckBox)sender).Checked);
         }
 
         private void button3_Click(object sender, EventArgs e)
         {
-            this.DGV = new DataGridView_pour_FPGA(6, 6,this.Li_Gb_spéciaux);
-            this.panel_modulaire.Controls.Add(this.DGV);
-            this.DGV.BringToFront();
+            this.DGV_fpga = new DataGridView_pour_FPGA(6, 6,this.Li_Gb_spéciaux);
+            this.panel_modulaire.Controls.Add(this.DGV_fpga);
+            this.DGV_fpga.BringToFront();
         }
 
         private void Cmb_mode_puissance_SelectedIndexChanged(object sender, EventArgs e)

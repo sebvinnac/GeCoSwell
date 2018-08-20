@@ -1,4 +1,4 @@
-﻿using DataFPGA;
+﻿using Gestion_Connection_Carte_FPGA;
 using Gestion_Objet;
 using System;
 using System.Collections.Generic;
@@ -40,6 +40,9 @@ namespace GeCoSwell
 
         public bool A_changé { get; private set; } = true;//indique qu'une valeur à changer
         public bool EstVisible { get; private set; } = true;
+        public int Index_de_départ_du_DGV { get; private set; }
+        public int Nombre_dadresse { get; private set; }
+        public List<UneDataFPGA> Li_data_du_dgv { get; private set; }
 
         public ToolTip tooltip;
 
@@ -307,8 +310,9 @@ namespace GeCoSwell
         /// Génére les éléments nécéssaire pour la communication
         /// </summary>
         /// <param name="data_pour_FPGA">Le gestionaire de data</param>
-        public void Init_Datafpga(DataGridView_pour_FPGA data_pour_FPGA)
+        public int Init_Datafpga(DataGridView_pour_FPGA data_pour_FPGA, int index_de_départ)
         {
+            this.Index_de_départ_du_DGV = index_de_départ;
             data_pour_FPGA.Add_Li_Datafpga("Valeur_max_avant_erreur_CAN1");
             data_pour_FPGA.Add_Li_Datafpga("Valeur_min_avant_erreur_CAN1");
             data_pour_FPGA.Add_Li_Datafpga("Valeur_max_avant_erreur_CAN2");
@@ -323,21 +327,24 @@ namespace GeCoSwell
             data_pour_FPGA.Add_Li_Datafpga("Valeur mesuré sur CAN3", false);
             data_pour_FPGA.Add_Li_Datafpga("Valeur mesuré sur CAN4", false);
             data_pour_FPGA.Add_Li_Datafpga("Quelle CAN à détecter une erreur", false);
+            this.Nombre_dadresse = 14;
+            return index_de_départ + this.Nombre_dadresse;
         }
 
-        public int MAJ_Datafpga(List<UneDataFPGA> data, int index)
+        public void Lié_li_data(List<UneDataFPGA> data)
         {
-            if (this.A_changé)
-            {
-                List<String> li_data = this.Récup_donné();
-                foreach (String str in li_data)
-                {
-                    data[index].Valeur = str;
-                    index++;
-                }
+            this.Li_data_du_dgv = data;
+        }
 
+        public void MAJ_Datafpga()
+        {
+            int index = this.Index_de_départ_du_DGV;
+            List<String> li_data_donné_recup = this.Récup_donné();
+            foreach (String str in li_data_donné_recup)
+            {
+                this.Li_data_du_dgv[index].Valeur = str;
+                index++;
             }
-            return index + 5;//car 4 valeur sont vide elle ne peuvent qu'être lue par sur la carte FPGA
         }
 
         #endregion

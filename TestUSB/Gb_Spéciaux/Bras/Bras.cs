@@ -1,4 +1,4 @@
-﻿using DataFPGA;
+﻿using Gestion_Connection_Carte_FPGA;
 using Gestion_Objet;
 using System;
 using System.Collections.Generic;
@@ -38,6 +38,9 @@ namespace GeCoSwell
 
         public bool A_changé { get; private set; } = true;//indique qu'une valeur à changer
         public bool EstVisible { get; private set; }
+        public int Index_de_départ_du_DGV { get; private set; }
+        public int Nombre_dadresse { get; private set; }
+        public List<UneDataFPGA> Li_data_du_dgv { get; private set; }
 
         private static int Max_général;
 
@@ -248,9 +251,6 @@ namespace GeCoSwell
 
         #region extérieur
 
-        /// <summary>
-        /// Met à jour le max_général et fait les vérifications nécéssaire
-        /// </summary>
         public static void Changer_Max_Général(string val)
         {
             Max_général = int.Parse(val);
@@ -306,27 +306,35 @@ namespace GeCoSwell
         /// Génére les éléments nécéssaire pour la communication
         /// </summary>
         /// <param name="data_pour_FPGA">Le gestionaire de data</param>
-        public void Init_Datafpga(DataGridView_pour_FPGA data_pour_FPGA)
+        public int Init_Datafpga(DataGridView_pour_FPGA data_pour_FPGA, int index_de_départ)
         {
+            this.Index_de_départ_du_DGV = index_de_départ;
             data_pour_FPGA.Add_Li_Datafpga("Valeur initial du triangle bras " + this.index_li_bras);
             data_pour_FPGA.Add_Li_Datafpga("Valeur max du triangle pour Bras " + this.index_li_bras);
             data_pour_FPGA.Add_Li_Datafpga("Valeur min du triangle pour Bras " + this.index_li_bras);
             data_pour_FPGA.Add_Li_Datafpga("Paramètre pour l'utilisation du Bras " + this.index_li_bras);
+            this.Nombre_dadresse = 4;
+            return index_de_départ + this.Nombre_dadresse;
         }
 
-        public int MAJ_Datafpga(List<UneDataFPGA> data, int index)
+        public void Lié_li_data(List<UneDataFPGA> data)
         {
-            if (this.A_changé)//si il y a eu du changement sur ce bras
-            {
-                List<String> li_data = this.Récup_donné();
-                data[index].Valeur = li_data[0];//init triangle
-                data[index + 1].Valeur = Le_max_local().ToString();
-                data[index + 2].Valeur = Le_min_local().ToString();
-                data[index + 3].Valeur = li_data[3];// paramètre
-            }
-            index += 4;
-            return index;
+            this.Li_data_du_dgv = data;
+        }
 
+        public void MAJ_Datafpga()
+        {
+            MAJ_DataFPGA_boucle(this.Récup_donné());
+        }
+
+        private void MAJ_DataFPGA_boucle(List<String> li_str)
+        {
+            int index = this.Index_de_départ_du_DGV;
+            foreach (string str in li_str)
+            {
+                this.Li_data_du_dgv[index].Valeur = str;
+                index++;
+            }
         }
 
         #endregion
@@ -356,10 +364,6 @@ namespace GeCoSwell
             }
         }
 
-        /// <summary>
-        /// Retourne le maximum local suivant si multiniv est activé ou pas
-        /// </summary>
-        /// <returns>Le max local</returns>
         private int Le_max_local()
         {
             return (this.Tb_multinivmax.Visible ? int.Parse(this.Tb_multinivmax.Text) : Max_général);

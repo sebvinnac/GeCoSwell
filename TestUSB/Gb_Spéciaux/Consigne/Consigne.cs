@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
-using DataFPGA;
+using Gestion_Connection_Carte_FPGA;
 using Gestion_Objet;
 
 namespace GeCoSwell
@@ -40,6 +40,9 @@ namespace GeCoSwell
 
         public bool A_changé { get; private set; } = true;//indique qu'une valeur à changer
         public bool EstVisible { get; private set; }
+        public int Index_de_départ_du_DGV { get; private set; }
+        public int Nombre_dadresse { get; private set; }
+        public List<UneDataFPGA> Li_data_du_dgv { get; private set; }
 
 
         #region constructeur
@@ -236,10 +239,10 @@ namespace GeCoSwell
         private void Cmb_type_consigne_changed(object sender, EventArgs e)
         {
             int choix = this.Cmb_type_consigne.SelectedIndex;
-            this.Tb_consigne.Visible = (choix == 0) ? true : false;//si choix 1 = 0 alors visible sinon caché
-            this.Tb_con_pour.Visible = (choix == 0) ? true : false;//si choix 1 = 0 alors visible sinon caché
-            this.Gb_Sinus_fpga.Visible = (choix == 1) ? true : false;
-            this.Cmb_consigne_CAN.Visible = (choix == 2) ? true : false;//si choix 1 = 2 alors visible sinon caché
+            this.Tb_consigne.Visible = (choix == 0);//si choix 1 = 0 alors visible sinon caché
+            this.Tb_con_pour.Visible = (choix == 0);//si choix 1 = 0 alors visible sinon caché
+            this.Gb_Sinus_fpga.Change_Visibilité(choix == 1);
+            this.Cmb_consigne_CAN.Visible = (choix == 2);//si choix 1 = 2 alors visible sinon caché
             this.L_consigne_CAN.Visible = this.Cmb_consigne_CAN.Visible;
 
             this.Gb_Sinus_fpga.Init_val_sinus();
@@ -259,32 +262,29 @@ namespace GeCoSwell
 
         #region Gestion extérieur
 
-        public void Change_Visibilité(bool visible)
+        public void Change_Visibilité_consigne(bool visible)
         {
             this.Gb_Principal.Visible = visible;
             this.EstVisible = visible;
         }
 
+
+        public static void Change_Visibilité_Pid(bool état)
+        {
+            foreach (Consigne gb in Li_consigne)
+            {
+                gb.Gb_Pid.Change_Visibilité(état);
+            }
+        }
+        
         private static void Change_combien_sont_visible(int nombre_visible)
         {
             for (int i = 0; i < Li_consigne.Count; i++)
             {
-                Li_consigne[i].Change_Visibilité(i < nombre_visible);
+                Li_consigne[i].Change_Visibilité_consigne(i < nombre_visible);
             }
         }
 
-        /// <summary>
-        /// Change l'état de la visibilité
-        /// </summary>
-        /// <param name="état">Le futur état</param>
-        public static void Gb_Pid_visibilité(bool état)
-        {
-            foreach (Consigne gb in Li_consigne)
-            {
-                gb.Change_Visibilité(état);
-            }
-        }
-    
 
         public static void Lié_position_dessous(List<GGroupBox> l_gb2)
         {
@@ -302,7 +302,8 @@ namespace GeCoSwell
                 this.Tb_con_max.Text,
                 this.Tb_con_min.Text
             };
-            this.A_changé = false;
+            if(!this.EstlePremier_consigne())
+                this.A_changé = false;
             return li_data;
         }
 
@@ -346,49 +347,55 @@ namespace GeCoSwell
         /// Génére les éléments nécéssaire pour la communication
         /// </summary>
         /// <param name="data_pour_FPGA">Le gestionaire de data</param>
-        public void Init_Datafpga(DataGridView_pour_FPGA data_pour_FPGA)
+        public int Init_Datafpga(DataGridView_pour_FPGA data_pour_FPGA, int index_de_départ)
         {
+            this.Index_de_départ_du_DGV = index_de_départ;
+            if (this.EstlePremier_consigne())
+            {
+                data_pour_FPGA.Add_Li_Datafpga("Paramètre commun à toute les consigne");
+                index_de_départ++;
+            }
             data_pour_FPGA.Add_Li_Datafpga("Consigne " + this.Index_consigne);
             data_pour_FPGA.Add_Li_Datafpga("Consigne Max " + this.Index_consigne);
             data_pour_FPGA.Add_Li_Datafpga("Consigne Min " + this.Index_consigne);
-            this.Gb_Sinus_fpga.Init_Datafpga(data_pour_FPGA);
-            this.Gb_Pid.Init_Datafpga(data_pour_FPGA);
-            if (this.EstleDernier_consigne())
-                data_pour_FPGA.Add_Li_Datafpga("Paramètre commun à toute les consigne");
+            index_de_départ = this.Gb_Sinus_fpga.Init_Datafpga(data_pour_FPGA, index_de_départ + 3);
+            index_de_départ = this.Gb_Pid.Init_Datafpga(data_pour_FPGA, index_de_départ);
+            this.Nombre_dadresse = index_de_départ - this.Index_de_départ_du_DGV;
+            return index_de_départ;
         }
 
-        private bool EstleDernier_consigne()
+        private bool EstlePremier_consigne()
         {
-            return this.Index_consigne == Li_consigne.Count - 1;
+            return this.Index_consigne == 1;
         }
 
-        public int MAJ_Datafpga(List<UneDataFPGA> data, int index)
+        public void Lié_li_data(List<UneDataFPGA> data)
         {
-            if (this.Gb_Principal.Visible)
-            {
-                if (this.A_changé)
-                {
-                    List<String> li_data = this.Récup_donné();
-                    data[index].Valeur = li_data[0];//consigne
-                    data[index + 1].Valeur = li_data[1];//consigne
-                    data[index + 2].Valeur = li_data[2];//consigne
-                }
-                index += 3;
-                index = this.Gb_Sinus_fpga.MAJ_Datafpga(data, index);
-                index = this.Gb_Pid.MAJ_Datafpga(data, index);
-            }
-            else
-                index += 11;
+            this.Li_data_du_dgv = data;
+            this.Gb_Sinus_fpga.Li_data_du_dgv = data;
+            this.Gb_Pid.Li_data_du_dgv = data;
+        }
 
-            //todo une fois
+        public void MAJ_Datafpga()
+        {
+            MAJ_DataFPGA_boucle(this.Récup_donné());
+            this.Gb_Sinus_fpga.MAJ_Datafpga();
+            this.Gb_Pid.MAJ_Datafpga();
+        }
 
-            if (this.EstleDernier_consigne())
+        private void MAJ_DataFPGA_boucle(List<String> li_str)
+        {
+            int index = this.Index_de_départ_du_DGV;
+            if (this.EstlePremier_consigne())
             {
-                data[index].Valeur = Consigne.Récup_Paramètre() + "à faire";//TODO + (surmodulation);
+                this.Li_data_du_dgv[index].Valeur = Consigne.Récup_Paramètre() + "à faire";//TODO + (surmodulation);
                 index++;
             }
-            return index;
-
+            foreach (string str in li_str)
+            {
+                this.Li_data_du_dgv[index].Valeur = str;
+                index++;
+            }
         }
 
         public static void Changement_mode_de_consigne(int mode)
@@ -404,18 +411,23 @@ namespace GeCoSwell
             {
                 case 0:
                     Change_combien_sont_visible(1);
+                    Change_Visibilité_Pid(false);
                     break;
                 case 1:
                     Change_combien_sont_visible(1);
+                    Change_Visibilité_Pid(true);
                     break;
                 case 2:
                     Change_combien_sont_visible(2);
+                    Change_Visibilité_Pid(false);
                     break;
                 case 3:
                     Change_combien_sont_visible(3);
+                    Change_Visibilité_Pid(false);
                     break;
                 default:
                     Change_combien_sont_visible(3);
+                    Change_Visibilité_Pid(true);
                     break;
             }
         }

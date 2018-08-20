@@ -140,14 +140,18 @@
     <Compile Include="Apropos.Designer.cs">
       <DependentUpon>Apropos.cs</DependentUpon>
     </Compile>
-    <Compile Include="DataFPGA\UneDataFPGA.cs" />
-    <Compile Include="DataFPGA\DataG_pour_FPGA.cs">
+    <Compile Include="Gestion_Connection_Carte_FPGA\Connection_au_Serveur\Connection_au_serveur.cs" />
+    <Compile Include="Gestion_Connection_Carte_FPGA\DataFPGA\MAJ_DATA_pour_Envoi.cs" />
+    <Compile Include="Gestion_Connection_Carte_FPGA\DataFPGA\UneDataFPGA.cs" />
+    <Compile Include="Gestion_Connection_Carte_FPGA\DataFPGA\DataGridView_pour_FPGA.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Gb_Spéciaux\CAN\CAN.cs" />
     <Compile Include="Gb_Spéciaux\DoublePulse\DoublePulse.cs" />
     <Compile Include="Gb_Spéciaux\Fréquence\Fréquence.cs" />
     <Compile Include="Gb_Spéciaux\Paramètres généraux\ParamètresGénéraux.cs" />
+    <Compile Include="Gestion_Connection_Carte_FPGA\Gestionaire_denvoi.cs" />
+    <Compile Include="Gestion_Connection_Carte_FPGA\Etat_de_connection.cs" />
     <Compile Include="Gestion_Objet\CCheckbox.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -172,6 +176,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Gb_Spéciaux\IGb_Spéciaux_.cs" />
+    <Compile Include="Gestion_Serveur\Communication_échoué_Exception.cs" />
     <Compile Include="Méthod_outil\Calc_conv_puissance.cs" />
     <Compile Include="Méthod_outil\Chiffre.cs" />
     <Compile Include="Dessin.cs" />
@@ -198,10 +203,10 @@
       <DependentUpon>MesureOsci.cs</DependentUpon>
     </Compile>
     <Compile Include="Méthod_outil\Outil_text.cs" />
-    <Compile Include="Options.cs">
+    <Compile Include="Option\Options.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Options.Designer.cs">
+    <Compile Include="Option\Options.Designer.cs">
       <DependentUpon>Options.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
@@ -249,7 +254,7 @@
     <EmbeddedResource Include="MesureOsci.resx">
       <DependentUpon>MesureOsci.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Options.resx">
+    <EmbeddedResource Include="Option\Options.resx">
       <DependentUpon>Options.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">

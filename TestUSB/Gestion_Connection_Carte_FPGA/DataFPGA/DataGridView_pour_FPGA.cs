@@ -1,12 +1,9 @@
 ﻿using GeCoSwell;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace DataFPGA
+namespace Gestion_Connection_Carte_FPGA
 {
     class DataGridView_pour_FPGA : DataGridView
     {
@@ -21,7 +18,6 @@ namespace DataFPGA
 
         UneDataFPGA Numéro_carte;
         
-
         UneDataFPGA tb_val_63;//", Adresse = "0111111", Use = "MESURE_TAB_FPGA", Exp = "D Position de départ Consigne sinus 3"},
         UneDataFPGA tb_val_64;//", Adresse = "1000000", Use = "MESURE_TAB_FPGA", Exp = "D Position de départ Consigne sinus 3"},
         
@@ -56,33 +52,16 @@ namespace DataFPGA
                 this.Rows.Add(dt.Adresse, dt.Valeur, dt.Utilité_de_cette_valeur);
 
             }
-/*
-            // Définition du nombre de colonnes
-            this.dataGridView1.ColumnCount = 4;
-            // On nomme les colonnes (si on veut)
-            dataGridView1.Columns[0].Name = "Col1";
-            dataGridView1.Columns[1].Name = "Col2";
-            dataGridView1.Columns[2].Name = "Col3";
-
-            
-            //On peut même insérer à la ligne que l'on souhaite
-            // 0 étant la première ligne.
-            this.dataGridView1.Rows.Insert(0, "un", "deux", "trois");
-
-
-            // Edition d'une cellule => dataGridView1[ligne,colonne]
-            // Ligne et colonne commencent à 0
-            this.dataGridView1[2, 1].Value = "Nouvelles valeur";
-            */
         }
 
         private void Init_Data()
         {
             this.Numéro_carte = this.Add_Li_Datafpga("Numéro_de_carte", typeasend: false);
-            //Bras
+
+            int index = 1;
             foreach (IGB_Spéciaux gb in Li_Gb_Spéciaux)
             {
-                gb.Init_Datafpga(this);
+                index = gb.Init_Datafpga(this,index);
             }
 
             //--------------
@@ -113,7 +92,6 @@ namespace DataFPGA
             this.Col_adresse = new DataGridViewTextBoxColumn();
             this.Col_data = new DataGridViewTextBoxColumn();
             this.Col_Explication = new DataGridViewTextBoxColumn();
-            //((System.ComponentModel.ISupportInitialize)(this)).BeginInit();
 
 
             this.Col_adresse.HeaderText = "Adresse";
@@ -140,14 +118,15 @@ namespace DataFPGA
 
         }
 
+        
         public void MAJ_Data()
         {
-            int i = 1;
             foreach (IGB_Spéciaux gb in Li_Gb_Spéciaux)
             {
-                i = gb.MAJ_Datafpga(Li_Datafpga, i);
+                gb.Lié_li_data(Li_Datafpga);
             }
         }
+
 
         #endregion
     }

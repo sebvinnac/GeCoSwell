@@ -90,7 +90,6 @@ namespace GeCoSwell
             this.chb_mode_multiniv = new System.Windows.Forms.CheckBox();
             this.gb_mode_fonctionnement = new System.Windows.Forms.GroupBox();
             this.chb_surmodulation = new System.Windows.Forms.CheckBox();
-            this.button1 = new System.Windows.Forms.Button();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.button3 = new System.Windows.Forms.Button();
             this.panel_modulaire = new System.Windows.Forms.Panel();
@@ -111,7 +110,7 @@ namespace GeCoSwell
             this.b_Connection.Text = "Connection";
             this.b_Connection.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
             this.b_Connection.UseVisualStyleBackColor = true;
-            this.b_Connection.Click += new System.EventHandler(this.B_Communication_Click);
+            this.b_Connection.Click += new System.EventHandler(this.B_Connection_serveur_Click);
             // 
             // b_Envoi
             // 
@@ -124,7 +123,7 @@ namespace GeCoSwell
             this.b_Envoi.Text = "Envoi";
             this.b_Envoi.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
             this.b_Envoi.UseVisualStyleBackColor = true;
-            this.b_Envoi.Click += new System.EventHandler(this.B_Envoi_Click);
+            this.b_Envoi.Click += new System.EventHandler(this.B_Envoi_donné_Click);
             // 
             // fichierToolStripMenuItem
             // 
@@ -190,7 +189,7 @@ namespace GeCoSwell
             this.connectionToolStripMenuItem.Name = "connectionToolStripMenuItem";
             this.connectionToolStripMenuItem.Size = new System.Drawing.Size(210, 22);
             this.connectionToolStripMenuItem.Text = "&Connection";
-            this.connectionToolStripMenuItem.Click += new System.EventHandler(this.B_Communication_Click);
+            this.connectionToolStripMenuItem.Click += new System.EventHandler(this.B_Connection_serveur_Click);
             // 
             // déconnectéToolStripMenuItem
             // 
@@ -211,7 +210,7 @@ namespace GeCoSwell
             this.envoiDesParamètresToolStripMenuItem.Name = "envoiDesParamètresToolStripMenuItem";
             this.envoiDesParamètresToolStripMenuItem.Size = new System.Drawing.Size(210, 22);
             this.envoiDesParamètresToolStripMenuItem.Text = "&Envoi des paramètres";
-            this.envoiDesParamètresToolStripMenuItem.Click += new System.EventHandler(this.B_Envoi_Click);
+            this.envoiDesParamètresToolStripMenuItem.Click += new System.EventHandler(this.B_Envoi_donné_Click);
             // 
             // réceptionDesParamètresToolStripMenuItem
             // 
@@ -414,7 +413,7 @@ namespace GeCoSwell
             this.tsm_connect.Name = "tsm_connect";
             this.tsm_connect.Size = new System.Drawing.Size(210, 22);
             this.tsm_connect.Text = "&Connection";
-            this.tsm_connect.Click += new System.EventHandler(this.B_Communication_Click);
+            this.tsm_connect.Click += new System.EventHandler(this.B_Connection_serveur_Click);
             // 
             // tsm_deconnecte
             // 
@@ -437,7 +436,7 @@ namespace GeCoSwell
             this.tsm_send.Name = "tsm_send";
             this.tsm_send.Size = new System.Drawing.Size(210, 22);
             this.tsm_send.Text = "&Envoi des paramètres";
-            this.tsm_send.Click += new System.EventHandler(this.B_Envoi_Click);
+            this.tsm_send.Click += new System.EventHandler(this.B_Envoi_donné_Click);
             // 
             // tsm_reception
             // 
@@ -601,19 +600,6 @@ namespace GeCoSwell
             this.chb_surmodulation.Text = "Mode surmodulation";
             this.chb_surmodulation.UseVisualStyleBackColor = true;
             // 
-            // button1
-            // 
-            this.button1.Image = global::GeCoSwell.Properties.Resources.icons8_connected_16;
-            this.button1.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.button1.Location = new System.Drawing.Point(554, 457);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(85, 44);
-            this.button1.TabIndex = 3;
-            this.button1.Text = "Connection";
-            this.button1.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
-            // 
             // checkBox1
             // 
             this.checkBox1.AutoSize = true;
@@ -642,7 +628,6 @@ namespace GeCoSwell
             // panel_modulaire
             // 
             this.panel_modulaire.AutoScroll = true;
-            this.panel_modulaire.Controls.Add(this.button1);
             this.panel_modulaire.Controls.Add(this.button3);
             this.panel_modulaire.Controls.Add(this.checkBox1);
             this.panel_modulaire.Location = new System.Drawing.Point(0, 74);
@@ -746,7 +731,6 @@ namespace GeCoSwell
         private System.Windows.Forms.CheckBox chb_mode_multiniv;
         private System.Windows.Forms.GroupBox gb_mode_fonctionnement;
         private System.Windows.Forms.CheckBox chb_surmodulation;
-        private System.Windows.Forms.Button button1;
         private System.Windows.Forms.CheckBox checkBox1;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Panel panel_modulaire;

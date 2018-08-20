@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Forms;
-using DataFPGA;
+using Gestion_Connection_Carte_FPGA;
 using Gestion_Objet;
 
 namespace GeCoSwell
@@ -23,6 +23,9 @@ namespace GeCoSwell
 
         public bool A_changé { get; private set; } = true;
         public bool EstVisible { get; private set; }
+        public int Index_de_départ_du_DGV { get; private set; }
+        public int Nombre_dadresse { get; private set; }
+        public List<UneDataFPGA> Li_data_du_dgv { get; set; }
 
         #region Construteur
 
@@ -119,16 +122,6 @@ namespace GeCoSwell
 
         #endregion
 
-        #region Gestion Extérieur
-        /// <summary>
-        /// Change la visibilité du groupbox
-        /// </summary>
-        public void Change_visibilité(bool visible)
-        {
-            this.Visible = visible;
-        }
-
-
         /// <summary>
         /// Remet les valeur offset et amplitude au valeur d'origine
         /// </summary>
@@ -137,10 +130,14 @@ namespace GeCoSwell
             this.Tb_offset.Text = "512";
             this.Tb_amplitude.Text = "1023";
         }
-
-        #endregion
-
+        
         #region Récupération des donné
+
+        public void Change_Visibilité(bool visible)
+        {
+            this.Visible = visible;
+            this.EstVisible = visible;
+        }
 
         /// <summary>
         /// Indique qu'il y a eu un changement dans un élément
@@ -168,34 +165,41 @@ namespace GeCoSwell
             return li_data;
         }
 
-        public void Init_Datafpga(DataGridView_pour_FPGA data_pour_FPGA)
+        public int Init_Datafpga(DataGridView_pour_FPGA data_pour_FPGA, int index_de_départ)
         {
+            this.Index_de_départ_du_DGV = index_de_départ;
             data_pour_FPGA.Add_Li_Datafpga("Diviseur de fréquence Consigne sinus FPGA " + this.Index_consigne);
             data_pour_FPGA.Add_Li_Datafpga("Amplitude " + this.Index_consigne);
             data_pour_FPGA.Add_Li_Datafpga("Valeur min du sinus " + this.Index_consigne);
             data_pour_FPGA.Add_Li_Datafpga("Position de départ Consigne sinus " + this.Index_consigne);
+            this.Nombre_dadresse = 4;
+            return index_de_départ + this.Nombre_dadresse;
         }
 
+        public void Lié_li_data(List<UneDataFPGA> data)
+        {
+            this.Li_data_du_dgv = data;
+        }
 
-        public int MAJ_Datafpga(List<UneDataFPGA> data, int index)
+        public void MAJ_Datafpga()
         {
             if (this.A_changé)
             {
-                List<String> li_data = this.Récup_donné();
-                data[index].Valeur = li_data[0];//diviseur freq fpga
-                data[index + 1].Valeur = li_data[1];//amplitude
-                data[index + 2].Valeur = li_data[2];//offset
-                data[index + 3].Valeur = li_data[3];//déphasage
+                MAJ_DataFPGA_boucle(this.Récup_donné());
             }
-            index += 4;
-            return index;
 
         }
 
-        /// <summary>
-        /// Calcul le min qui doit être envoyé au FPGA à l'aide de l'amplitude et de l'offset
-        /// </summary>
-        /// <returns>Return une string qui contient le min</returns>
+        private void MAJ_DataFPGA_boucle(List<String> li_str)
+        {
+            int index = this.Index_de_départ_du_DGV;
+            foreach (string str in li_str)
+            {
+                this.Li_data_du_dgv[index].Valeur = str;
+                index++;
+            }
+        }
+
         private string Calcul_minAmplitude()
         {
             return (int.Parse(this.Tb_offset.Text) - ( int.Parse(this.Tb_amplitude.Text)/2)-1).ToString();

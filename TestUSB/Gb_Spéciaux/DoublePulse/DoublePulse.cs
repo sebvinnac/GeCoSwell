@@ -1,4 +1,4 @@
-﻿using DataFPGA;
+﻿using Gestion_Connection_Carte_FPGA;
 using Gestion_Objet;
 using System;
 using System.Collections.Generic;
@@ -31,6 +31,9 @@ namespace GeCoSwell
 
         public bool A_changé { get; private set; } = true;//indique qu'une valeur à changer
         public bool EstVisible { get; private set; }
+        public int Index_de_départ_du_DGV { get; private set; }
+        public int Nombre_dadresse { get; private set; }
+        public List<UneDataFPGA> Li_data_du_dgv { get; private set; }
 
         public ToolTip tooltip;
 
@@ -166,11 +169,6 @@ namespace GeCoSwell
 
         #region extérieur
 
-
-        /// <summary>
-        /// Change la visibilité du groupbox
-        /// </summary>
-        /// <param name="visible">Nouvelle état de visibilité</param>
         public void Change_Visibilité(bool visible)
         {
             this.Gb_Principal.Visible = visible;
@@ -222,25 +220,35 @@ namespace GeCoSwell
         }
 
 
-        public void Init_Datafpga(DataGridView_pour_FPGA data_pour_FPGA)
+        public int Init_Datafpga(DataGridView_pour_FPGA data_pour_FPGA, int index_de_départ)
         {
+            this.Index_de_départ_du_DGV = index_de_départ;
             data_pour_FPGA.Add_Li_Datafpga("T1 : Durée de la première impulsion");
             data_pour_FPGA.Add_Li_Datafpga("T2 : Durée du temps de repos");
             data_pour_FPGA.Add_Li_Datafpga("µs T3 : Durée de la seconde impulsion");
             data_pour_FPGA.Add_Li_Datafpga("Paramètre pour double pulse");
+            this.Nombre_dadresse = 4;
+            return index_de_départ + this.Nombre_dadresse;
         }
 
-        public int MAJ_Datafpga(List<UneDataFPGA> data, int index)
+        public void Lié_li_data(List<UneDataFPGA> data)
         {
-            if (this.A_changé)//si il y a eu du changement sur ce bras
+            this.Li_data_du_dgv = data;
+        }
+
+        public void MAJ_Datafpga()
+        {
+            MAJ_DataFPGA_boucle(this.Récup_donné());
+        }
+
+        private void MAJ_DataFPGA_boucle(List<String> li_str)
+        {
+            int index = this.Index_de_départ_du_DGV;
+            foreach (string str in li_str)
             {
-                List<String> li_data = this.Récup_donné();
-                data[index].Valeur = li_data[0];//pulse T1
-                data[index + 1].Valeur = li_data[1];//T2
-                data[index + 2].Valeur = li_data[2];//T3
-                data[index + 3].Valeur = li_data[3];// param
+                this.Li_data_du_dgv[index].Valeur = str;
+                index++;
             }
-            return index + 4;
         }
 
             #endregion
